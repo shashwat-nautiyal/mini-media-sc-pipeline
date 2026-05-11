@@ -1,0 +1,60 @@
+networks:
+  media-pipeline:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  kafka_data:
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [media-pipeline]
+
+  temporal:
+    image: temporalio/auto-setup:1.22.0
+    ports:
+      - "7233:7233" # gRPC port
+      - "8080:8080" # Web UI
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=db
+    depends_on: [db]
+    networks: [media-pipeline]
+
+  zookeeper:
+        image: confluentinc/cp-zookeeper:7.5.0
+        environment:
+          ZOOKEEPER_CLIENT_PORT: 2181
+        networks: [media-pipeline]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on: [zookeeper]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks: [media-pipeline]
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+    networks: [media-pipeline]
