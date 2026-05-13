@@ -75,3 +75,17 @@ services:
       - ACTIVATE_PRO=0
     networks:
       - media-pipeline
+      
+  api-ruby:
+    build: ./api-ruby
+    ports:
+      - "4567:4567"
+    environment:
+      - PORT=4567
+      - KAFKA_BROKERS=kafka:29092
+      - S3_ENDPOINT=http://localstack:4566
+    depends_on:
+      - kafka
+      - localstack
+    networks:
+      - media-pipeline
