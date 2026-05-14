@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'sinatra'
 gem 'puma'           # Concurrent web server
+gem 'rackup'
 gem 'aws-sdk-s3'     # AWS SDK for S3 integration
 gem 'ruby-kafka'     # Native Ruby Kafka client
 gem 'dotenv'         # Environment variable management

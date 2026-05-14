@@ -5,6 +5,7 @@ networks:
 volumes:
   postgres_data:
   kafka_data:
+  zookeeper_data:
 
 services:
   db:
@@ -47,6 +48,9 @@ services:
         image: confluentinc/cp-zookeeper:7.5.0
         environment:
           ZOOKEEPER_CLIENT_PORT: 2181
+        volumes:
+        - zookeeper_data:/var/lib/zookeeper/data
+        - zookeeper_data:/var/lib/zookeeper/log
         networks: [media-pipeline]
 
   kafka:
@@ -84,8 +88,13 @@ services:
       - PORT=4567
       - KAFKA_BROKERS=kafka:29092
       - S3_ENDPOINT=http://localstack:4566
+      - S3_BUCKET=media-pipeline-assets
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_REGION=us-east-1
     depends_on:
       - kafka
       - localstack
+    restart: on-failure # CRITICAL: Ruby boots faster than Kafka. This forces a retry
     networks:
       - media-pipeline

@@ -34,6 +34,7 @@ docker-compose.local.yml
 .localstack/
 tmp/
 logs/
+test*
 
 # IDE
 .vscode/
