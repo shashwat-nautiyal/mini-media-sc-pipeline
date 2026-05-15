@@ -98,3 +98,15 @@ services:
     restart: on-failure # CRITICAL: Ruby boots faster than Kafka. This forces a retry
     networks:
       - media-pipeline
+
+  worker-go:
+    build: ./worker-go
+    environment:
+      - KAFKA_BROKERS=kafka:29092
+      - TEMPORAL_HOST_PORT=temporal:7233
+    depends_on:
+      - kafka
+      - temporal
+    restart: on-failure
+    networks:
+      - media-pipeline
